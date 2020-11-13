@@ -26,6 +26,7 @@ import javax.swing.KeyStroke;
 
 import app.Main;
 import app.control.Log;
+import app.control.SASLoader;
 
 public class MainFrame extends JFrame implements ActionListener {
 
@@ -179,7 +180,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			open.addActionListener(this);
 
 			toolBar.add(open);
-			
+
 			toolBar.addSeparator();
 
 			String imgLocation2 = "resources/images/login.png";
@@ -190,6 +191,10 @@ public class MainFrame extends JFrame implements ActionListener {
 			login.setActionCommand(ACTION_LOGIN);
 			login.addActionListener(this);
 			login.setEnabled(false);
+
+			SASLoader.getInstance().onSASItemsLoaded$()
+					.doOnNext(loaded -> login.setEnabled(loaded))
+					.subscribe();
 
 			toolBar.add(login);
 
@@ -204,7 +209,6 @@ public class MainFrame extends JFrame implements ActionListener {
 
 			toolBar.add(logout);
 
-			
 			toolBar.setFloatable(false);
 
 		}
@@ -223,6 +227,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		JMenuBar bar = new JMenuBar();
 
 		JMenu file = new JMenu("File");
+		file.setMnemonic(KeyEvent.VK_F);
 
 		JMenuItem open = new JMenuItem("Open...");
 		open.setMnemonic(KeyEvent.VK_O);
@@ -243,6 +248,30 @@ public class MainFrame extends JFrame implements ActionListener {
 		file.add(exit);
 
 		bar.add(file);
+
+		JMenu connection = new JMenu("Connection");
+		connection.setMnemonic(KeyEvent.VK_C);
+
+		JMenuItem login = new JMenuItem("Connect...");
+		login.setMnemonic(KeyEvent.VK_N);
+		login.setActionCommand(ACTION_LOGIN);
+		login.addActionListener(this);
+
+		SASLoader.getInstance().onSASItemsLoaded$()
+				.doOnNext(loaded -> login.setEnabled(loaded))
+				.subscribe();
+
+		connection.add(login);
+
+		JMenuItem logout = new JMenuItem("Disconnect");
+		logout.setMnemonic(KeyEvent.VK_D);
+		logout.setActionCommand(ACTION_LOGOUT);
+		logout.addActionListener(this);
+		logout.setEnabled(false);
+
+		connection.add(logout);
+
+		bar.add(connection);
 
 		return bar;
 	}

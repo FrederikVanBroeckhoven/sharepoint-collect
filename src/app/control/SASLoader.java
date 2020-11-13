@@ -29,6 +29,7 @@ public class SASLoader {
 
 	private Subject<File> onSASFileLoad$;
 	private Subject<SASItem[]> onSASItemsLoad$;
+	private Subject<Boolean> onSASFileLoaded$;
 
 	private SASLoader() {
 		init();
@@ -39,13 +40,17 @@ public class SASLoader {
 
 		onSASFileLoad$ = BehaviorSubject.create();
 		onSASItemsLoad$ = BehaviorSubject.create();
+		onSASFileLoaded$ = BehaviorSubject.createDefault(Boolean.FALSE);
 
 		onSASFileLoad$
 				// it's convenient to have both the file and reader in the next steps,
 				// so wrap both in a pair
 				.map(file -> Pair.with(file, new ProgressReader(new FileReader(file))))
 				// initialize the global load progress
-				.doOnNext(p -> Log.getInstance().globalProgress(Progress.init(p.getValue0().getName())))
+				.doOnNext(p -> {
+					Log.getInstance().globalProgress(Progress.init(p.getValue0().getName()));
+					onSASFileLoaded$.onNext(Boolean.FALSE);								
+				})
 				// subscribe to the reader's progress fed into the global load progress
 				.doOnNext(p -> p.getValue1().onProgress$()
 						.filter(l -> l > 0)
@@ -61,6 +66,7 @@ public class SASLoader {
 								Log.getInstance().globalProgress(Progress.done(
 									items.length + " records loaded!"
 								));
+								onSASFileLoaded$.onNext(Boolean.TRUE);
 								return items;
 							})
 							// report the errors (if any) and use the filename in the error message
@@ -69,13 +75,16 @@ public class SASLoader {
 								Log.getInstance().globalProgress(Progress.fail("load failed!"));
 								Log.getInstance().userError("Sorry, can't open '" + p.getValue0()
 										.getAbsolutePath() + "'");
+								onSASFileLoaded$.onNext(Boolean.FALSE);
 							})
 							// make sure the error completes the (inner) observable
 							.onErrorReturnItem(new SASItem[] {})
 							// close the reader on completion (and on error)
 							.doOnComplete(() -> p.getValue1().close());
 				})
-				.doOnNext(sas -> onSASItemsLoad$.onNext(sas))
+				.doOnNext(sas -> {
+					onSASItemsLoad$.onNext(sas);
+				})
 				.subscribe();
 
 	}
@@ -90,6 +99,10 @@ public class SASLoader {
 	
 	public Observable<SASItem[]> onSASItemsLoad$() {
 		return onSASItemsLoad$;
+	}
+
+	public Observable<Boolean> onSASItemsLoaded$() {
+		return onSASFileLoaded$;
 	}
 
 }
