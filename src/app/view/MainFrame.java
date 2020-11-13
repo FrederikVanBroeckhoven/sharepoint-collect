@@ -30,6 +30,8 @@ import app.control.Log;
 public class MainFrame extends JFrame implements ActionListener {
 
 	private static final String ACTION_OPEN = "open";
+	private static final String ACTION_LOGIN = "login";
+	private static final String ACTION_LOGOUT = "logout";
 	private static final String ACTION_EXIT = "exit";
 
 	private static final long serialVersionUID = -295434742076759366L;
@@ -83,34 +85,34 @@ public class MainFrame extends JFrame implements ActionListener {
 				.subscribe();
 
 		Log.getInstance().onGlobalProgress$()
-			.doOnNext(progress -> {
-				
-				JProgressBar bar = getProgressBar();
-				
-				switch(progress.state) {
-					case DONE: {
-						bar.setForeground(Color.green.darker());
-						bar.setString(progress.label);						
-						break;
+				.doOnNext(progress -> {
+
+					JProgressBar bar = getProgressBar();
+
+					switch (progress.state) {
+						case DONE: {
+							bar.setForeground(Color.green.darker());
+							bar.setString(progress.label);
+							break;
+						}
+						case FAIL: {
+							bar.setForeground(Color.RED);
+							bar.setValue(100);
+							bar.setString(progress.label);
+							break;
+						}
+						case PROGRESS:
+						default: {
+							bar.setForeground(null);
+							double dval = (double) Math.round(progress.percent * 10000) / 100;
+							bar.setValue((int) dval);
+							bar.setString(Double.toString(dval) + "%");
+						}
 					}
-					case FAIL: {
-						bar.setForeground(Color.RED);
-						bar.setValue(100);
-						bar.setString(progress.label);						
-						break;						
-					}
-					case PROGRESS:
-					default: {
-						bar.setForeground(null);
-						double dval = (double)Math.round(progress.percent * 10000) / 100;
-						bar.setValue((int)dval);
-						bar.setString(Double.toString(dval) + "%");
-					}
-				}
-				
-			})
-			.subscribe();
-		
+
+				})
+				.subscribe();
+
 		pack();
 
 	}
@@ -135,7 +137,6 @@ public class MainFrame extends JFrame implements ActionListener {
 
 			statusBar.add(sep, gbc);
 
-
 			gbc.fill = GridBagConstraints.NONE;
 			gbc.anchor = GridBagConstraints.EAST;
 			gbc.gridx = 0;
@@ -150,18 +151,18 @@ public class MainFrame extends JFrame implements ActionListener {
 		return statusBar;
 
 	}
-	
+
 	public JProgressBar getProgressBar() {
-		if(progressBar == null) {
+		if (progressBar == null) {
 			progressBar = new JProgressBar(0, 100);
-			
+
 			progressBar.setValue(0);
 			progressBar.setStringPainted(true);
 			progressBar.setForeground(null);
 			progressBar.setString("nothing loaded...");
-			
+
 			progressBar.setMinimumSize(new Dimension(200, progressBar.getPreferredSize().height));
-			progressBar.setPreferredSize(progressBar.getMinimumSize());			
+			progressBar.setPreferredSize(progressBar.getMinimumSize());
 		}
 		return progressBar;
 	}
@@ -178,7 +179,34 @@ public class MainFrame extends JFrame implements ActionListener {
 			open.addActionListener(this);
 
 			toolBar.add(open);
+			
+			toolBar.addSeparator();
+
+			String imgLocation2 = "resources/images/login.png";
+
+			URL imageURL2 = Main.class.getClassLoader().getResource(imgLocation2);
+
+			JButton login = new JButton(loadImage(imageURL2, 32, 32));
+			login.setActionCommand(ACTION_LOGIN);
+			login.addActionListener(this);
+			login.setEnabled(false);
+
+			toolBar.add(login);
+
+			String imgLocation3 = "resources/images/logout.png";
+
+			URL imageURL3 = Main.class.getClassLoader().getResource(imgLocation3);
+
+			JButton logout = new JButton(loadImage(imageURL3, 32, 32));
+			logout.setActionCommand(ACTION_LOGOUT);
+			logout.addActionListener(this);
+			logout.setEnabled(false);
+
+			toolBar.add(logout);
+
+			
 			toolBar.setFloatable(false);
+
 		}
 		return toolBar;
 	}
@@ -186,7 +214,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public JPanel getTreePanel() {
 		if (treePanel == null) {
 			treePanel = new SASTreePanel();
-			treePanel.setPreferredSize(new Dimension(640,  480));
+			treePanel.setPreferredSize(new Dimension(640, 480));
 		}
 		return treePanel;
 	}
@@ -229,6 +257,10 @@ public class MainFrame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent ae) {
 		if (ae.getActionCommand().equals(ACTION_OPEN)) {
 			Dialogs.getInstance().showOpenDialog(getTreePanel());
+		} else if (ae.getActionCommand().equals(ACTION_LOGIN)) {
+			Dialogs.getInstance().showLoginDialog(getTreePanel());
+		} else if (ae.getActionCommand().equals(ACTION_LOGOUT)) {
+			// implement
 		} else if (ae.getActionCommand().equals(ACTION_EXIT)) {
 			System.exit(0);
 		}
