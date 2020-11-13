@@ -7,6 +7,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import app.control.SASLoader;
+import app.view.panels.LoginPanel;
 
 public class Dialogs {
 

@@ -1,46 +1,29 @@
 package app.view;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
-import java.awt.Image;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.net.URL;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JSeparator;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 
-import app.Main;
 import app.control.Log;
-import app.control.SASLoader;
+import app.view.components.ToolBar;
+import app.view.panels.SASTreePanel;
+import app.view.panels.StatusBar;
+import app.view.components.MenuBar;
 
-public class MainFrame extends JFrame implements ActionListener {
-
-	private static final String ACTION_OPEN = "open";
-	private static final String ACTION_LOGIN = "login";
-	private static final String ACTION_LOGOUT = "logout";
-	private static final String ACTION_EXIT = "exit";
+public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = -295434742076759366L;
 
 	private JPanel statusBar;
 	private JToolBar toolBar;
-	private JProgressBar progressBar;
-
+	private JMenuBar menuBar;
 	private JPanel treePanel;
 
 	public MainFrame() throws HeadlessException {
@@ -53,7 +36,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
 		getContentPane().setLayout(new GridBagLayout());
 
-		setJMenuBar(createMenuBar());
+		setJMenuBar(getSASMenuBar());
 
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -82,36 +65,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		getContentPane().add(getStatusBar(), gbc);
 
 		Log.getInstance().onUserError$()
-				.doOnNext(m -> Dialogs.getInstance().showErrorDialog(m, this.getTreePanel()))
-				.subscribe();
-
-		Log.getInstance().onGlobalProgress$()
-				.doOnNext(progress -> {
-
-					JProgressBar bar = getProgressBar();
-
-					switch (progress.state) {
-						case DONE: {
-							bar.setForeground(Color.green.darker());
-							bar.setString(progress.label);
-							break;
-						}
-						case FAIL: {
-							bar.setForeground(Color.RED);
-							bar.setValue(100);
-							bar.setString(progress.label);
-							break;
-						}
-						case PROGRESS:
-						default: {
-							bar.setForeground(null);
-							double dval = (double) Math.round(progress.percent * 10000) / 100;
-							bar.setValue((int) dval);
-							bar.setString(Double.toString(dval) + "%");
-						}
-					}
-
-				})
+				.doOnNext(m -> Dialogs.getInstance().showErrorDialog(m, getRootPane()))
 				.subscribe();
 
 		pack();
@@ -119,102 +73,27 @@ public class MainFrame extends JFrame implements ActionListener {
 	}
 
 	public JPanel getStatusBar() {
-
 		if (statusBar == null) {
-
-			statusBar = new JPanel();
-
-			statusBar.setLayout(new GridBagLayout());
-
-			GridBagConstraints gbc = new GridBagConstraints();
-
-			JSeparator sep = new JSeparator();
-
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.gridx = 0;
-			gbc.gridy = 0;
-			gbc.weightx = 1;
-			gbc.weighty = 0;
-
-			statusBar.add(sep, gbc);
-
-			gbc.fill = GridBagConstraints.NONE;
-			gbc.anchor = GridBagConstraints.EAST;
-			gbc.gridx = 0;
-			gbc.gridy = 1;
-			gbc.weightx = 0;
-			gbc.weighty = 1;
-			gbc.insets = new Insets(5, 0, 0, 0);
-
-			statusBar.add(getProgressBar(), gbc);
-
+			statusBar = new StatusBar();
 		}
 		return statusBar;
 
 	}
 
-	public JProgressBar getProgressBar() {
-		if (progressBar == null) {
-			progressBar = new JProgressBar(0, 100);
-
-			progressBar.setValue(0);
-			progressBar.setStringPainted(true);
-			progressBar.setForeground(null);
-			progressBar.setString("nothing loaded...");
-
-			progressBar.setMinimumSize(new Dimension(200, progressBar.getPreferredSize().height));
-			progressBar.setPreferredSize(progressBar.getMinimumSize());
-		}
-		return progressBar;
-	}
-
 	public JToolBar getToolBar() {
 		if (toolBar == null) {
-			toolBar = new JToolBar();
-			String imgLocation = "resources/images/open-folder.png";
-
-			URL imageURL = Main.class.getClassLoader().getResource(imgLocation);
-
-			JButton open = new JButton(loadImage(imageURL, 32, 32));
-			open.setActionCommand(ACTION_OPEN);
-			open.addActionListener(this);
-
-			toolBar.add(open);
-
-			toolBar.addSeparator();
-
-			String imgLocation2 = "resources/images/login.png";
-
-			URL imageURL2 = Main.class.getClassLoader().getResource(imgLocation2);
-
-			JButton login = new JButton(loadImage(imageURL2, 32, 32));
-			login.setActionCommand(ACTION_LOGIN);
-			login.addActionListener(this);
-			login.setEnabled(false);
-
-			SASLoader.getInstance().onSASItemsLoaded$()
-					.doOnNext(loaded -> login.setEnabled(loaded))
-					.subscribe();
-
-			toolBar.add(login);
-
-			String imgLocation3 = "resources/images/logout.png";
-
-			URL imageURL3 = Main.class.getClassLoader().getResource(imgLocation3);
-
-			JButton logout = new JButton(loadImage(imageURL3, 32, 32));
-			logout.setActionCommand(ACTION_LOGOUT);
-			logout.addActionListener(this);
-			logout.setEnabled(false);
-
-			toolBar.add(logout);
-
-			toolBar.setFloatable(false);
-
+			toolBar = new ToolBar();
 		}
 		return toolBar;
 	}
 
+	public JMenuBar getSASMenuBar() {
+		if (menuBar == null) {
+			menuBar = new MenuBar();
+		}
+		return menuBar;
+	}
+	
 	public JPanel getTreePanel() {
 		if (treePanel == null) {
 			treePanel = new SASTreePanel();
@@ -223,76 +102,5 @@ public class MainFrame extends JFrame implements ActionListener {
 		return treePanel;
 	}
 
-	private JMenuBar createMenuBar() {
-		JMenuBar bar = new JMenuBar();
-
-		JMenu file = new JMenu("File");
-		file.setMnemonic(KeyEvent.VK_F);
-
-		JMenuItem open = new JMenuItem("Open...");
-		open.setMnemonic(KeyEvent.VK_O);
-		open.setActionCommand(ACTION_OPEN);
-		open.setAccelerator(KeyStroke.getKeyStroke(
-				KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-		open.addActionListener(this);
-
-		JMenuItem exit = new JMenuItem("Exit");
-		exit.setMnemonic(KeyEvent.VK_X);
-		exit.setActionCommand(ACTION_EXIT);
-		exit.setAccelerator(KeyStroke.getKeyStroke(
-				KeyEvent.VK_X, ActionEvent.CTRL_MASK));
-		exit.addActionListener(this);
-
-		file.add(open);
-		file.add(new JSeparator(JSeparator.HORIZONTAL));
-		file.add(exit);
-
-		bar.add(file);
-
-		JMenu connection = new JMenu("Connection");
-		connection.setMnemonic(KeyEvent.VK_C);
-
-		JMenuItem login = new JMenuItem("Connect...");
-		login.setMnemonic(KeyEvent.VK_N);
-		login.setActionCommand(ACTION_LOGIN);
-		login.addActionListener(this);
-
-		SASLoader.getInstance().onSASItemsLoaded$()
-				.doOnNext(loaded -> login.setEnabled(loaded))
-				.subscribe();
-
-		connection.add(login);
-
-		JMenuItem logout = new JMenuItem("Disconnect");
-		logout.setMnemonic(KeyEvent.VK_D);
-		logout.setActionCommand(ACTION_LOGOUT);
-		logout.addActionListener(this);
-		logout.setEnabled(false);
-
-		connection.add(logout);
-
-		bar.add(connection);
-
-		return bar;
-	}
-
-	private static ImageIcon loadImage(URL url, int sizex, int sizey) {
-		ImageIcon icon = new ImageIcon(url);
-		Image image = icon.getImage();
-		Image scaled = image.getScaledInstance(sizex, sizey, Image.SCALE_SMOOTH);
-		return new ImageIcon(scaled);
-	}
-
-	public void actionPerformed(ActionEvent ae) {
-		if (ae.getActionCommand().equals(ACTION_OPEN)) {
-			Dialogs.getInstance().showOpenDialog(getTreePanel());
-		} else if (ae.getActionCommand().equals(ACTION_LOGIN)) {
-			Dialogs.getInstance().showLoginDialog(getTreePanel());
-		} else if (ae.getActionCommand().equals(ACTION_LOGOUT)) {
-			// implement
-		} else if (ae.getActionCommand().equals(ACTION_EXIT)) {
-			System.exit(0);
-		}
-	}
 
 }
