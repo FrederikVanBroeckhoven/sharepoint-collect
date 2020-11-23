@@ -1,17 +1,14 @@
 package app.view.components;
 
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URL;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
 
-import app.Main;
 import app.control.SASLoader;
-import app.view.Dialogs;
+import app.view.extras.Dialogs;
+import app.view.extras.IconSet;
 
 public class ToolBar extends JToolBar implements ActionListener {
 
@@ -47,10 +44,7 @@ public class ToolBar extends JToolBar implements ActionListener {
 	
 	public JButton getOpenButton() {
 		if (openButton == null) {
-			String imgLocation = "resources/images/open-folder.png";
-			URL imageURL = Main.class.getClassLoader().getResource(imgLocation);
-
-			openButton = new JButton(loadImage(imageURL, 32, 32));
+			openButton = new JButton(IconSet.getOpen(32));
 			openButton.setActionCommand(ACTION_OPEN);
 			openButton.addActionListener(this);
 
@@ -60,22 +54,17 @@ public class ToolBar extends JToolBar implements ActionListener {
 
 	public JButton getLoginButton() {
 		if (loginButton == null) {
-			String imgLocation = "resources/images/login.png";
-			URL imageURL = Main.class.getClassLoader().getResource(imgLocation);
-
-			loginButton = new JButton(loadImage(imageURL, 32, 32));
+			loginButton = new JButton(IconSet.getLogin(32));
 			loginButton.setActionCommand(ACTION_LOGIN);
 			loginButton.addActionListener(this);
+			loginButton.setEnabled(false);
 		}
 		return loginButton;
 	}
 
 	public JButton getLogoutButton() {
 		if (logoutButton == null) {
-			String imgLocation = "resources/images/logout.png";
-			URL imageURL = Main.class.getClassLoader().getResource(imgLocation);
-
-			logoutButton = new JButton(loadImage(imageURL, 32, 32));
+			logoutButton = new JButton(IconSet.getLogout(32));
 			logoutButton.setActionCommand(ACTION_LOGOUT);
 			logoutButton.addActionListener(this);
 			logoutButton.setEnabled(false);
@@ -89,16 +78,8 @@ public class ToolBar extends JToolBar implements ActionListener {
 		} else if (ae.getActionCommand().equals(ACTION_LOGIN)) {
 			Dialogs.getInstance().showLoginDialog(getRootPane());
 		} else if (ae.getActionCommand().equals(ACTION_LOGOUT)) {
-			// implement
+			// TODO: implement
 		}
 	}
-
-	private static ImageIcon loadImage(URL url, int sizex, int sizey) {
-		ImageIcon icon = new ImageIcon(url);
-		Image image = icon.getImage();
-		Image scaled = image.getScaledInstance(sizex, sizey, Image.SCALE_SMOOTH);
-		return new ImageIcon(scaled);
-	}
-
 
 }

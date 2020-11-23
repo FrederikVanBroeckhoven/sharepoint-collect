@@ -13,8 +13,9 @@ import javax.swing.JToolBar;
 
 import app.control.Log;
 import app.view.components.ToolBar;
+import app.view.extras.Dialogs;
 import app.view.panels.SASTreePanel;
-import app.view.panels.StatusBar;
+import app.view.panels.StatusBarPanel;
 import app.view.components.MenuBar;
 
 public class MainFrame extends JFrame {
@@ -74,7 +75,7 @@ public class MainFrame extends JFrame {
 
 	public JPanel getStatusBar() {
 		if (statusBar == null) {
-			statusBar = new StatusBar();
+			statusBar = new StatusBarPanel();
 		}
 		return statusBar;
 

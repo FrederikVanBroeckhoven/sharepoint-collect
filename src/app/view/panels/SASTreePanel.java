@@ -1,20 +1,27 @@
 package app.view.panels;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.Icon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
+import org.javatuples.Pair;
+
 import app.control.SASLoader;
 import app.model.SASItem;
+import app.view.extras.IconSet;
 import io.reactivex.rxjava3.core.Observable;
 
 public class SASTreePanel extends JPanel {
@@ -25,6 +32,84 @@ public class SASTreePanel extends JPanel {
 	private JScrollPane treeScroll;
 
 	private DefaultTreeModel treeModel;
+
+	private static enum SASNodeType {
+		SAS_FILE,
+		COMPOUND,
+		INDICATION,
+		STUDY,
+		R_EVENT,
+		ATTACHMENT
+	}
+
+	private static class SASNode {
+
+		public SASNodeType type;
+		public String value;
+		public Icon icon;
+
+//		public SASNode(SASNodeType type, String value) {
+//			this(type, value, null);
+//		}
+//
+		public SASNode(SASNodeType type, String value, Icon icon) {
+			super();
+			this.type = type;
+			this.value = value;
+			this.icon = icon;
+		}
+
+		public boolean equals(Object obj) {
+			return equals((SASNode) obj);
+		}
+
+		public boolean equals(SASNode sas) {
+			return sas.type == type && sas.value.equals(value);
+		}
+
+		@Override
+		public String toString() {
+			return value;
+		}
+
+	}
+
+	private static class SASNodeRenderer extends DefaultTreeCellRenderer {
+
+		private static final long serialVersionUID = -2633553301821609L;
+
+		@Override
+		public Component getTreeCellRendererComponent(JTree tree, Object obj, boolean sel, boolean exp, boolean leaf,
+				int row, boolean focus) {
+
+			// OK, not the cleanest code, but definitely the safest :)
+
+			Component c = super.getTreeCellRendererComponent(tree, obj, sel, exp, leaf, row, focus);
+
+			if (!(obj instanceof DefaultMutableTreeNode)) {
+				return c;
+			}
+
+			DefaultMutableTreeNode dmObj = (DefaultMutableTreeNode) obj;
+			if (!(dmObj.getUserObject() instanceof SASNode)) {
+				return c;
+			}
+
+			SASNode node = (SASNode) dmObj.getUserObject();
+
+			if (!(c instanceof JLabel)) {
+				return c;
+			}
+
+			JLabel label = (JLabel) c;
+			if (node != null && node.icon != null) {
+				label.setIcon(node.icon);
+			}
+
+			return label;
+		}
+
+	}
 
 	public SASTreePanel() {
 		init();
@@ -45,8 +130,15 @@ public class SASTreePanel extends JPanel {
 		add(getTreeScroll(), gbc);
 
 		SASLoader.getInstance().onSASFileLoad$()
-				.doOnNext(file -> {
-					getMutubaleRoot().setUserObject(file.getName());
+				.withLatestFrom(
+						SASLoader.getInstance().onSASItemsLoaded$(),
+						(file, loaded) -> Pair.with(file,
+								loaded
+										? IconSet.getInstance().getImageIcon(IconSet.ICON_FILE_OK, 24)
+										: IconSet.getInstance().getImageIcon(IconSet.ICON_FILE_ERROR, 24)))
+				.doOnNext(pair -> {
+					getMutubaleRoot().setUserObject(
+							new SASNode(SASNodeType.SAS_FILE, pair.getValue0().getName(), pair.getValue1()));
 					getTree().setRootVisible(true);
 					refreshTree();
 				})
@@ -78,6 +170,7 @@ public class SASTreePanel extends JPanel {
 		if (tree == null) {
 			tree = new JTree(getTreeModel());
 			tree.setRootVisible(false);
+			tree.setCellRenderer(new SASNodeRenderer());
 		}
 		return tree;
 	}
@@ -88,7 +181,7 @@ public class SASTreePanel extends JPanel {
 		}
 		return treeScroll;
 	}
-	
+
 	private DefaultMutableTreeNode getMutubaleRoot() {
 		return (DefaultMutableTreeNode) getTreeModel().getRoot();
 	}
@@ -101,10 +194,14 @@ public class SASTreePanel extends JPanel {
 	}
 
 	private DefaultMutableTreeNode createBranch(SASItem item) {
-		DefaultMutableTreeNode compoundNode = new DefaultMutableTreeNode(item.getCompound());
-		DefaultMutableTreeNode indicationNode = new DefaultMutableTreeNode(item.getIndication());
-		DefaultMutableTreeNode studyNode = new DefaultMutableTreeNode(item.getStudy());
-		DefaultMutableTreeNode reventNode = new DefaultMutableTreeNode(item.getREvent());
+		DefaultMutableTreeNode compoundNode = new DefaultMutableTreeNode(
+				new SASNode(SASNodeType.COMPOUND, item.getCompound(), IconSet.getCompound(24)));
+		DefaultMutableTreeNode indicationNode = new DefaultMutableTreeNode(
+				new SASNode(SASNodeType.INDICATION, item.getIndication(), IconSet.getUser(24)));
+		DefaultMutableTreeNode studyNode = new DefaultMutableTreeNode(
+				new SASNode(SASNodeType.STUDY, item.getStudy(), IconSet.getStudy(24)));
+		DefaultMutableTreeNode reventNode = new DefaultMutableTreeNode(
+				new SASNode(SASNodeType.R_EVENT, item.getREvent(), IconSet.getList(24)));
 
 		compoundNode.add(indicationNode);
 		indicationNode.add(studyNode);

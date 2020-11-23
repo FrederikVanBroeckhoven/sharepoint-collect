@@ -10,7 +10,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 
 import app.control.SASLoader;
-import app.view.Dialogs;
+import app.view.extras.Dialogs;
 
 public class MenuBar extends JMenuBar implements ActionListener {
 
@@ -96,6 +96,9 @@ public class MenuBar extends JMenuBar implements ActionListener {
 			connectMenuItem.setMnemonic(KeyEvent.VK_N);
 			connectMenuItem.setActionCommand(ACTION_LOGIN);
 			connectMenuItem.addActionListener(this);
+
+			connectMenuItem.setEnabled(false);
+
 		}
 		return connectMenuItem;
 	}

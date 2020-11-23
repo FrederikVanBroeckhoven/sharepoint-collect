@@ -12,6 +12,7 @@ import app.control.utils.ProgressReader;
 import app.model.SASItem;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 
 public class SASLoader {
@@ -38,9 +39,9 @@ public class SASLoader {
 	private void init() {
 		gson = new Gson();
 
-		onSASFileLoad$ = BehaviorSubject.create();
+		onSASFileLoad$ = PublishSubject.create();
 		onSASItemsLoad$ = BehaviorSubject.create();
-		onSASFileLoaded$ = BehaviorSubject.createDefault(Boolean.FALSE);
+		onSASFileLoaded$ = PublishSubject.create();
 
 		onSASFileLoad$
 				// it's convenient to have both the file and reader in the next steps,

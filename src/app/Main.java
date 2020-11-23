@@ -24,7 +24,7 @@ public class Main {
 				createAndShowGUI();
 
 				Log.getInstance().onGlobalProgress$()
-						.doOnNext(progress -> System.out.println(progress.label + ": " + progress.state.toString()
+						.doOnNext(progress -> System.out.println(progress.label + " - " + progress.state.toString()
 								+ " (" + progress.percent + ")"))
 						.subscribe();
 

@@ -12,13 +12,13 @@ import javax.swing.JSeparator;
 
 import app.control.Log;
 
-public class StatusBar extends JPanel {
+public class StatusBarPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
 	private JProgressBar progressBar;
 
-	public StatusBar() {
+	public StatusBarPanel() {
 		init();
 	}
 
