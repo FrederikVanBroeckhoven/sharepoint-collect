@@ -5,7 +5,8 @@ public class Progress {
 	public enum State {
 		PROGRESS,
 		DONE,
-		FAIL
+		FAIL,
+		WAITING
 	}
 
 	public String label;
@@ -36,6 +37,10 @@ public class Progress {
 
 	public static Progress init(String label) {
 		return progress(label, 0);
+	}
+
+	public static Progress waiting(String label) {
+		return new Progress(label, 0, State.WAITING);
 	}
 
 }
