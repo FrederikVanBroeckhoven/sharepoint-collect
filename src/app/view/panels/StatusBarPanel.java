@@ -55,18 +55,27 @@ public class StatusBarPanel extends JPanel {
 					switch (progress.state) {
 						case DONE: {
 							bar.setForeground(Color.green.darker());
+							bar.setIndeterminate(false);
 							bar.setString(progress.label);
+							bar.setValue(100);							
 							break;
 						}
 						case FAIL: {
 							bar.setForeground(Color.RED);
+							bar.setIndeterminate(false);
 							bar.setValue(100);
 							bar.setString(progress.label);
 							break;
 						}
+						case WAITING:
+							bar.setString(progress.label);							
+							bar.setForeground(Color.ORANGE);
+							bar.setIndeterminate(true);
+							break;
 						case PROGRESS:
 						default: {
 							bar.setForeground(null);
+							bar.setIndeterminate(false);
 							double dval = (double) Math.round(progress.percent * 10000) / 100;
 							bar.setValue((int) dval);
 							bar.setString(Double.toString(dval) + "%");

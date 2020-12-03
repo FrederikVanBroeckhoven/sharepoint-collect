@@ -9,7 +9,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 
-import app.control.SASLoader;
+import app.control.SASManager;
 import app.view.extras.Dialogs;
 
 public class MenuBar extends JMenuBar implements ActionListener {
@@ -18,7 +18,6 @@ public class MenuBar extends JMenuBar implements ActionListener {
 
 	private static final String ACTION_OPEN = "open";
 	private static final String ACTION_LOGIN = "login";
-	private static final String ACTION_LOGOUT = "logout";
 	private static final String ACTION_EXIT = "exit";
 
 	private JMenu fileMenu;
@@ -27,7 +26,6 @@ public class MenuBar extends JMenuBar implements ActionListener {
 
 	private JMenu connectionMenu;
 	private JMenuItem connectMenuItem;
-	private JMenuItem disconnectMenuItem;
 
 	public MenuBar() {
 		init();
@@ -38,7 +36,7 @@ public class MenuBar extends JMenuBar implements ActionListener {
 		add(getFileMenu());
 		add(getConnectionMenu());
 
-		SASLoader.getInstance().onSASItemsLoaded$()
+		SASManager.getInstance().onSASItemsLoaded$()
 				.doOnNext(loaded -> getConnectMenuItem().setEnabled(loaded))
 				.subscribe();
 
@@ -85,7 +83,6 @@ public class MenuBar extends JMenuBar implements ActionListener {
 			connectionMenu.setMnemonic(KeyEvent.VK_C);
 			
 			connectionMenu.add(getConnectMenuItem());
-			connectionMenu.add(getDisconnectMenuItem());
 		}
 		return connectionMenu;
 	}
@@ -103,27 +100,11 @@ public class MenuBar extends JMenuBar implements ActionListener {
 		return connectMenuItem;
 	}
 
-	public JMenuItem getDisconnectMenuItem() {
-		if (disconnectMenuItem == null) {
-			disconnectMenuItem = new JMenuItem("Disconnect");
-			disconnectMenuItem.setMnemonic(KeyEvent.VK_D);
-			disconnectMenuItem.setActionCommand(ACTION_LOGOUT);
-			disconnectMenuItem.addActionListener(this);
-			
-			// TODO: implement functionality
-			disconnectMenuItem.setEnabled(false);
-			
-		}
-		return disconnectMenuItem;
-	}
-
 	public void actionPerformed(ActionEvent ae) {
 		if (ae.getActionCommand().equals(ACTION_OPEN)) {
 			Dialogs.getInstance().showOpenDialog(getRootPane());
 		} else if (ae.getActionCommand().equals(ACTION_LOGIN)) {
 			Dialogs.getInstance().showLoginDialog(getRootPane());
-		} else if (ae.getActionCommand().equals(ACTION_LOGOUT)) {
-			// TODO: implement functionality
 		} else if (ae.getActionCommand().equals(ACTION_EXIT)) {
 			System.exit(0);
 		}

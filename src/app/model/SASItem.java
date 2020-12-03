@@ -1,21 +1,51 @@
 package app.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.net.URL;
+import java.util.Objects;
 
+import com.google.gson.annotations.JsonAdapter;
+
+@JsonAdapter(SASItemJsonDeserializer.class)
 public class SASItem {
 
-	@SerializedName("compound")
+	public static class ListLocator {
+
+		public URL url;
+		public String name;
+
+		public ListLocator(URL url, String name) {
+			this.url = url;
+			this.name = name;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(url, name);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return this.equals((ListLocator) obj);
+		}
+
+		public boolean equals(ListLocator obj) {
+			return url.equals(obj.url) && name.equals(obj.name);
+		}
+
+	}
+
 	private String compound;
-	@SerializedName("indication")
 	private String indication;
-	@SerializedName("study")
 	private String study;
-	@SerializedName("revent")
 	private String rEvent;
-	@SerializedName("splist")
-	private String spList;
-	
-	public SASItem() {
+	private ListLocator listLocation;
+
+	public SASItem(String compound, String indication, String study, String rEvent, ListLocator listLocation) {
+		this.compound = compound;
+		this.indication = indication;
+		this.study = study;
+		this.rEvent = rEvent;
+		this.listLocation = listLocation;
 	}
 
 	public String getCompound() {
@@ -34,8 +64,8 @@ public class SASItem {
 		return rEvent;
 	}
 
-	public String getSpList() {
-		return spList;
+	public ListLocator getListLocation() {
+		return listLocation;
 	}
-	
+
 }

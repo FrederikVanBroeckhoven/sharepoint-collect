@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
 
-import app.control.SASLoader;
+import app.control.SASManager;
 import app.view.extras.Dialogs;
 import app.view.extras.IconSet;
 
@@ -14,13 +14,11 @@ public class ToolBar extends JToolBar implements ActionListener {
 
 	private static final String ACTION_OPEN = "open";
 	private static final String ACTION_LOGIN = "login";
-	private static final String ACTION_LOGOUT = "logout";
 	
 	private static final long serialVersionUID = 4356167833588367418L;
 
 	private JButton openButton;
 	private JButton loginButton;
-	private JButton logoutButton;
 	
 	public ToolBar() {
 		init();
@@ -33,9 +31,10 @@ public class ToolBar extends JToolBar implements ActionListener {
 		addSeparator();
 
 		add(getLoginButton());
-		add(getLogoutButton());
 
-		SASLoader.getInstance().onSASItemsLoaded$()
+		
+		
+		SASManager.getInstance().onSASItemsLoaded$()
 				.doOnNext(loaded -> getLoginButton().setEnabled(loaded))
 				.subscribe();
 
@@ -62,23 +61,11 @@ public class ToolBar extends JToolBar implements ActionListener {
 		return loginButton;
 	}
 
-	public JButton getLogoutButton() {
-		if (logoutButton == null) {
-			logoutButton = new JButton(IconSet.getLogout(32));
-			logoutButton.setActionCommand(ACTION_LOGOUT);
-			logoutButton.addActionListener(this);
-			logoutButton.setEnabled(false);
-		}
-		return logoutButton;
-	}
-
 	public void actionPerformed(ActionEvent ae) {
 		if (ae.getActionCommand().equals(ACTION_OPEN)) {
 			Dialogs.getInstance().showOpenDialog(getRootPane());
 		} else if (ae.getActionCommand().equals(ACTION_LOGIN)) {
 			Dialogs.getInstance().showLoginDialog(getRootPane());
-		} else if (ae.getActionCommand().equals(ACTION_LOGOUT)) {
-			// TODO: implement
 		}
 	}
 

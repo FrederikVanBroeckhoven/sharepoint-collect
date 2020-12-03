@@ -2,26 +2,30 @@ package app.control;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.List;
 
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 import com.google.gson.Gson;
 
 import app.control.utils.Progress;
 import app.control.utils.ProgressReader;
 import app.model.SASItem;
+import dashboard.connect.Item;
+import dashboard.connect.Item.Attachment;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 
-public class SASLoader {
+public class SASManager {
 
-	private static SASLoader sasLoader;
+	private static SASManager sasLoader;
 
-	public static SASLoader getInstance() {
+	public static SASManager getInstance() {
 		if (sasLoader == null) {
-			sasLoader = new SASLoader();
+			sasLoader = new SASManager();
 		}
 		return sasLoader;
 	}
@@ -31,8 +35,10 @@ public class SASLoader {
 	private Subject<File> onSASFileLoad$;
 	private Subject<SASItem[]> onSASItemsLoad$;
 	private Subject<Boolean> onSASFileLoaded$;
+	private Subject<Pair<SASItem, List<Item>>> onSASItemListed$;
+	private Subject<Triplet<SASItem, Item, List<Attachment>>> onAttachmentsListed$;
 
-	private SASLoader() {
+	private SASManager() {
 		init();
 	}
 
@@ -42,6 +48,8 @@ public class SASLoader {
 		onSASFileLoad$ = PublishSubject.create();
 		onSASItemsLoad$ = BehaviorSubject.create();
 		onSASFileLoaded$ = PublishSubject.create();
+		onSASItemListed$ = PublishSubject.create();
+		onAttachmentsListed$ = PublishSubject.create();
 
 		onSASFileLoad$
 				// it's convenient to have both the file and reader in the next steps,
@@ -50,7 +58,7 @@ public class SASLoader {
 				// initialize the global load progress
 				.doOnNext(p -> {
 					Log.getInstance().globalProgress(Progress.init(p.getValue0().getName()));
-					onSASFileLoaded$.onNext(Boolean.FALSE);								
+					onSASFileLoaded$.onNext(Boolean.FALSE);
 				})
 				// subscribe to the reader's progress fed into the global load progress
 				.doOnNext(p -> p.getValue1().onProgress$()
@@ -65,8 +73,7 @@ public class SASLoader {
 							.map(reader -> {
 								SASItem[] items = gson.fromJson(reader, SASItem[].class);
 								Log.getInstance().globalProgress(Progress.done(
-									items.length + " records loaded!"
-								));
+										items.length + " records loaded!"));
 								onSASFileLoaded$.onNext(Boolean.TRUE);
 								return items;
 							})
@@ -90,20 +97,43 @@ public class SASLoader {
 
 	}
 
-	public void load(File sasFile) {
-		onSASFileLoad$.onNext(sasFile);
-	}
-
-	public Observable<File> onSASFileLoad$() {
+	public Observable<File> onFileLoaded$() {
 		return onSASFileLoad$;
 	}
-	
-	public Observable<SASItem[]> onSASItemsLoad$() {
+
+	public Observable<SASItem[]> onItemsLoaded$() {
 		return onSASItemsLoad$;
+	}
+
+	public Observable<Pair<SASItem, List<Item>>> onItemsListed$() {
+		return onSASItemListed$;
+	}
+
+	public Observable<Triplet<SASItem, Item, List<Attachment>>> onAttachmentsListed$() {
+		return onAttachmentsListed$;
+	}
+
+	public Observable<SASItem> lastLoaded$() {
+		return Observable.defer(
+				() -> Observable.fromArray(onSASItemsLoad$.first(new SASItem[] {}).blockingGet()));
 	}
 
 	public Observable<Boolean> onSASItemsLoaded$() {
 		return onSASFileLoaded$;
+	}
+
+
+	
+	public void load(File sasFile) {
+		onSASFileLoad$.onNext(sasFile);
+	}
+
+	public void SASItemListed(SASItem sas, List<Item> list) {
+		onSASItemListed$.onNext(Pair.with(sas, list));
+	}
+
+	public void attachmentsListed(SASItem sas, Item item, List<Attachment> att) {
+		onAttachmentsListed$.onNext(Triplet.with(sas, item, att));
 	}
 
 }
