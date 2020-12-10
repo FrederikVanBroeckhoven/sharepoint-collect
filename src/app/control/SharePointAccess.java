@@ -83,9 +83,10 @@ public class SharePointAccess {
 									String title = loc.name;
 
 									return Observable.just(Pair.with(connections.get(url), title))
-											.map(locator -> Pair.with(locator.getValue0().source, locator
-													.getValue1()))
-											.map(locator -> locator.getValue0().listItems(locator.getValue1()))
+											.map(locator -> Pair.with(
+													locator.getValue0().source,
+													locator.getValue1()))
+											.map(locator -> locator.getValue0().listItems())
 											.onErrorComplete();
 								})
 						.doOnNext(res -> {
@@ -103,9 +104,10 @@ public class SharePointAccess {
 									String title = loc.name;
 
 									return Observable.just(Pair.with(connections.get(url), title))
-											.map(locator -> Pair.with(locator.getValue0().source, locator
-													.getValue1()))
-											.map(locator -> locator.getValue0().listAttachments(title, item))
+											.map(locator -> Pair.with(
+													locator.getValue0().source,
+													locator.getValue1()))
+											.map(locator -> locator.getValue0().listAttachments(item))
 											.onErrorComplete();
 								})
 						.doOnNext(res -> {

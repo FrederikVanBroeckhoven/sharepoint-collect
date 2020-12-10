@@ -32,6 +32,7 @@ public class IconSet {
 	public static final String ICON_VIRUS = "virus.png";
 	public static final String ICON_BACTERIA = "bacteria.png";
 	public static final String ICON_FILE_GENERIC = "file-generic.png";
+	public static final String ICON_DOWNLOAD = "download.png";
 
 	private static class IconId {
 
@@ -167,6 +168,10 @@ public class IconSet {
 
 	public static ImageIcon getFileGeneric(int s) {
 		return getByName(ICON_FILE_GENERIC, s, true);
+	}
+
+	public static ImageIcon getDownload(int s) {
+		return getByName(ICON_DOWNLOAD, s);
 	}
 
 	private static ImageIcon loadImage(URL url, int sizex, int sizey, boolean grey) {
